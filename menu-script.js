@@ -1,11 +1,17 @@
 import {characterData} from "./character.js";
+import {scenes} from "./scenes.js"
 
 // Populates the html needed for the 'sidebar' area with the character's stats
 const renderStatsSidebar = function(character) {
 
+    /*    const result = await axios({
+            method: 'get',
+            url: "https://jquery-and-restapi-default-rtdb.firebaseio.com/",
+        }) */
+
     return `
           <div class="box">
-              <h2>Money: $${character.money}</h2>
+              <h2>Money: ${character.money}</h2>
           </div>
           <div class="box">
               <h2>Smarts: ${character.smarts}</h2>
@@ -14,6 +20,7 @@ const renderStatsSidebar = function(character) {
               <h2>Body: ${character.body}</h2>
           </div>
           <div class="character">
+  
           </div>
           `; 
   };
@@ -25,44 +32,54 @@ const renderStatsSidebar = function(character) {
       // return html here that renders the page with the img & text areas from the scenes.js
       return `
       <div class="container">
-          <div class="game"><a><img src="./images/panda.jpg" height="400px" width="100%"></a></div>
-          <div class="game"><a><img src="./images/brain_logo.png" height="400px" width="100%"></a></div>
+          <div class="game" data-type="workout"><a><img src="./images/panda.jpg" height="400px" width="100%"></a></div>
+          <div class="game" data-type="quiz"><a><img src="./images/brain_logo.png" height="400px" width="100%"></a></div>
         </div>
         <div class="container">
-            <div class="game"><a><img src="./images/moneygame.jpg" height="400px" width="100%"></a></div>
-          <div class="date"><a><img src="./images/date.jpg" height="400px" width="100%"></a></div>
+            <div class="game" data-type="money"><a><img src="./images/moneygame.jpg" height="400px" width="100%"></a></div>
+          <div class="date" data-type="date"><a><img src="./images/date.jpg" height="400px" width="100%"></a></div>
         </div>
       `
   };
 
   
-const renderTextBox = function(scene) {
+    const renderTextBox = function(scene) {
 
-    return `<div class="textbox">
-                <a class="text" data-id="">
-                </a> 
-                <div class="buttonContainer">
-                    <a class="save" href="save.html">Save</a>
-                    <a class="menu" href="menu.html">Menu</a>
-                </div>
+    return `<div class="textbox" data-id="${scene.id}">
+                <a class="text" data-id="${scene.id}"><p class="textboxp">${scene.textbox}</p></a> 
             </div>`
     
     };
 
-    // implement listener for when the save button is pressed to change the content of the main area
+    const handleTextPress = function(event) {
+        let sceneId = event.target.getAttribute("data-id");
+        sceneId++;
+        let scene = [];
+        scenes.forEach(el => {
+            if (el.id == sceneId) {
+                scene.push(el);
+            }
+        });
 
-    const handleSaveButton = function(event) {
+        const $main = $('.main');
+        $main.empty();
+    
+        const mainContent = renderMainArea();
+        $main.append(mainContent);
+    
+        const text = renderTextBox(scene[0]);
+        $main.append(text);
+      
+    } 
 
-    };
+    const handleGamePress = async function(event) {
+        const type = event.getAttribute("data-type");
+        if (type == "quiz") {
 
+        }
+    }
 
-
-    // implement listener for when the cancel button is pressed to change the content of the main area
-    const handleCancelButton = function(event) {
-
-    };
-
-    const loadStatsIntoDOM = function(character) {
+    const loadStatsIntoDOM = function(character, scenes) {
         const $side = $('.side');
         var bar =  renderStatsSidebar(character);
         $side.append(bar); 
@@ -71,24 +88,19 @@ const renderTextBox = function(scene) {
     
         const $main = $('.main');
         const main = renderMainArea();
-    //    const text = renderTextBox();
+        const text = renderTextBox(scenes[0]);
         $main.append(main);
         $main.append(text);
         
-    //    $root.on("click", ".textbox", handleTextPress);
+        $root.on("click", ".textbox", handleTextPress);
+        $root.on("click", ".game", handleGamePress);
     
     
-        // Listener for the save button
-        $root.on("click", ".save", handleSaveButton);
-    
-        // Listener for the cancel button
-        $root.on("click", ".cancel", handleCancelButton);
-        
     
     };
     
     $(function() {
-        loadStatsIntoDOM(characterData);
+        loadStatsIntoDOM(characterData, scenes);
     });
     
     

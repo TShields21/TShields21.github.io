@@ -1,7 +1,8 @@
 export const characterData = {
-    name: "",
+    fname: "",
+    lname: "",
     money: 0.0,
     smarts: 0,
     body: 0,
-    douche: 0
+    stress: 0
 };

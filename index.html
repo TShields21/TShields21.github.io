@@ -8,12 +8,54 @@
         <script src="jquery.js" type="text/javascript"></script>
         <script src="script.js" type="module"></script>
         <script src="character.js" type="module"></script>
+        <script src="./node_modules/axios/dist/axios.js"></script>
     </head>
     <body>
         <div id="home">
-            <h1>Dateboy</h1>
-            <h2>Welcome to Dateboy!</h2>
+            <div class="index-main">
+                <h1>Dateboy</h1>
+                <h2>Welcome to Dateboy!</h2>
+                <div class="indexText">
+                        <p>Congratulations on being accepted into the Dateboy program!
+                            Dateboy is a program where you improve yourself to become the best dateboy ever. Workout,
+                        challenge your mind, and earn money to spend on your dates. That way, you'll become the best Fu-- Um, we mean,
+                    best dateboy ever!<br><br>Fill out the contents of your dating profile below to finish enrollment.</p>
+                </div>
+                <div class="profile">
+                    <form>
+                        <label for="fname">First name: </label>
+                        <input type="text" name="fname" class="fname" value="Jane">
+                        <label for="lname">Last name: </label>
+                        <input type="text" name="lname" class="lname" value="Doe">
+                        <br>
+                        <h3>Biography:</h3>
+                        <textarea class="bio" rows="4" cols="60">Fill in your biography here. People may (or may not) care about what's in here, depending on if your profile pic matches their standards.
+                        </textarea>
+                        <button class="submit"><a href="game-menu.html">Submit Profile</a></button>
+                    </form>
+                </div>
+            </div>
         </div>
 
+        <!-- The core Firebase JS SDK is always required and must be listed first -->
+        <script src="https://www.gstatic.com/firebasejs/8.5.0/firebase-app.js"></script>
+
+        <!-- TODO: Add SDKs for Firebase products that you want to use
+            https://firebase.google.com/docs/web/setup#available-libraries -->
+
+        <script>
+        // Your web app's Firebase configuration
+        var firebaseConfig = {
+            apiKey: "AIzaSyD337ZEuenTm5ac8-6pYsEJfe4W0AdGfpg",
+            authDomain: "jquery-and-restapi.firebaseapp.com",
+            projectId: "jquery-and-restapi",
+            databaseURL: "https://jquery-and-restapi-default-rtdb.firebaseio.com/",
+            storageBucket: "jquery-and-restapi.appspot.com",
+            messagingSenderId: "655793932170",
+            appId: "1:655793932170:web:a737e1539a0c82ebbcea73"
+        };
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        </script>
     </body>
  </html>
