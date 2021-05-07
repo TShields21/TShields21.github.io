@@ -3,7 +3,8 @@ export const scenes = [
     {
         id: 0,
         textbox:  `Here is the platform where you can choose four things to do.
-        <strong>Workout</strong>, <strong>study</strong>, <strong>earn money</strong>, and <strong>date.</strong>`
+        <strong>Workout</strong>, <strong>study</strong>, <strong>earn money</strong>, and <strong>date.</strong>
+        Click here to advance.`
     
     },
     
@@ -24,7 +25,7 @@ export const scenes = [
     {
         id: 3,
         textbox: `On the lower left is the <strong>Money minigame</strong> option. Choose <strong>money
-        minigame</strong> to gain items by very legal means and sell them for a very reasonable profit.`
+        minigame</strong> to gain money by very legal means.`
     },
 
     {
