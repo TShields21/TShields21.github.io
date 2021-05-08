@@ -1,2 +1,2 @@
 # jQuery-and-RESTapi-project
- A complete webpage videogame with an originally developed RESTful API.
+ A complete webpage videogame utilizing RESTful API servers.
