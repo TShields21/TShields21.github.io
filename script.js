@@ -2,21 +2,10 @@ import {characterData} from "./character.js";
 
 
 const handleSaveButton = async function(event) {
-    event.preventDefault();
     const lname = $('.lname');
     const fname = $('.fname');
-    const password = $('.password');
     characterData.fname = fname.val();
     characterData.lname = lname.val();
-
-   /* await axios({
-        method: 'post',
-        url: "https://console.firebase.google.com/project/undefined/firestore/data/",
-        data: {
-            "first": fname,
-            "last": lname,
-        },
-    }); */
 
 }
 
