@@ -1,4 +1,3 @@
-import axios from "axios";
 import { blackjack } from "./blackjack.js";
 import {characterData} from "./character.js";
 import {scenes} from "./scenes.js"
@@ -34,7 +33,7 @@ const renderStatsSidebar = function(character) {
         </div>
         <div class="container">
             <div class="game" data-type="money"><a><img data-type="money" src="./images/moneygame.jpg" height="400px" width="100%"></a></div>
-          <div class="date" data-type="date"><a><img data-type="date" src="./images/date.jpg" height="400px" width="100%"></a></div>
+          <div class="game" data-type="date"><a><img data-type="date" src="./images/date.jpg" height="400px" width="100%"></a></div>
         </div>
       `
   };
@@ -190,7 +189,9 @@ const renderStatsSidebar = function(character) {
             <h2 class="dealer">Dealer: ${dealerF}, #</h2>
             <br>
             <button class="hit"><p class="hit">Hit</p></button><button class="stay"><p class="stay">Stay</p></button>
-            <h2>The 2nd card of the dealer is hidden and will only show after your turn.<br>Remember, dealer stands at 16.</h2>
+            <h2>The 2nd card of the dealer is hidden and will only show after your turn.<br>Choose 'hit' to add another card to your pile, or choose 'stay'
+            to stay where you are.<br><br>
+            You win if you get 21 or score higher than the dealer.<br>Remember, dealer stands at 16.</h2>
             `
             $main.append(text);
 
@@ -263,14 +264,40 @@ const renderStatsSidebar = function(character) {
             const quotes = await axios({
                 method: 'get',
                 url: 'https://type.fit/api/quotes'
-            }).then(function() {
-                return quotes.data;
+            }).then(function(results) {
+                return results.data;;
             });
+            const q = Math.floor(Math.random() * quotes.length);
             // Write code to generate a random quote & message text here
+            if (characterData.body == 0) {
+                $main.append(`<div><h2>In the Dateboy program, we supply you with inspirational quotes to help your workout go smoother.<br>
+                <br>You're welcome, Dateboy.</h2></div>`);
+            }
+            $main.append(`<div><h2>${quotes[q].text}<br>--- ${quotes[q].author}<br><br>The words permeate your mind... <br><br>
+            You hear a faint voice say: "You're welcome..."<br>You feel less stressed and improved your body a bit.</h2></div>
+            <button class="continue">Continue</button>`);
+            if (characterData.stress == 0) {
+                characterData.body++;
+                return;
+            }
+            characterData.body++;
+            characterData.stress -= 5;
 
         } else if (type == "money") {
             renderBlackjack();
 
+        } else if (type == "date") {
+            if (characterData.smarts >= 40 && characterData.money >= 200 && characterData.body >= 10) {
+                $main.append(`<div><h2>Congratulations, Dateboy! Your intelligence, money, and body has found you your first date. Here is the first candidate:</h2>
+                <img src="./images/date.webp" height="600px" width="200px"><h2>Your date is set for tomorrow.</h2></div><button class="continue">
+                Continue</button>`)
+            } else {
+                $main.append(`<div><h2>The Dateboy program takes into consideration your money, intelligence, and <br>
+                physical fitness to better determine a match that is good for you. Unfortunately, you are lacking in 1 or more
+                areas and no one wants to date you yet. Work on yourself and try again later.</h2><br><p>Pro tip: 
+                Make sure you have at least $200.</p></div><button class="continue">
+                Continue</button>`);
+            }
         }
     }
 
@@ -295,10 +322,14 @@ const renderStatsSidebar = function(character) {
             blackjack.yourCards.forEach(card => {
                 total += card;
             });
+            let rand = Math.floor(Math.random() * 10) + 1;
+            blackjack.yourCards.push(rand);
+            total += rand;
+            $('.your-cards').append(`, ` + rand);
 
             if (total == 21) {
                 // Resetting the blackjack game
-                const text = `<button class="continue"><p>Continue</p></button><div class="textbox" data-id="11">
+                text = `<button class="continue"><p>Continue</p></button><div class="textbox" data-id="11">
                 <a class="text" data-id="11"><p class="textboxp">Nice! You won $${blackjack.bet}!</p></a> 
                 </div>`;
                 $('.hit').remove();
@@ -310,12 +341,9 @@ const renderStatsSidebar = function(character) {
                 $main.append(text);
                 
             } 
-            let rand = Math.floor(Math.random() * 12) + 1;
-            blackjack.yourCards.push(rand);
-            total += rand;
-            $('.your-cards').append(`, ` + rand);
+
             if (total > 21) {
-                const text = `<button class="continue"><p>Continue</p></button><div class="textbox" data-id="11">
+               text = `<button class="continue"><p>Continue</p></button><div class="textbox" data-id="11">
                 <a class="text" data-id="11"><p class="textboxp">BUST! Damn. You lost $${blackjack.bet}! That stings. Stress +10.</p></a> 
                 </div>`;
                 $('.hit').remove();
@@ -339,79 +367,67 @@ const renderStatsSidebar = function(character) {
                 dealerTotal += parseInt(card);
             });
 
-            if (total == 21) {
-                // Resetting the blackjack game
-                $('.hit').remove();
-                $('.stay').remove();
-                text = `<button class="continue"><p>Continue</p></button><div class="textbox" data-id="11">
-                <a class="text" data-id="11"><p class="textboxp">Nice! You won ${blackjack.bet}!</p></a> 
-                </div>`;
-                characterData.money += blackjack.bet;
-                blackjack.bet = 0;
-                blackjack.dealerCards = [];
-                blackjack.yourCards = [];
-                $main.append(text);
-                
-            }
+
             $('.dealer').append(blackjack.dealerCards[1]);
             
-
-               while (dealerTotal < 16) {
-                    const rand = Math.floor(Math.random() * 10) + 1;
-                        dealerTotal += parseInt(rand);
-                        $('.dealer').append(`, ` + rand);
+                if (dealerTotal < 16) {
+                while (dealerTotal < 16) {
+                        const rand = Math.floor(Math.random() * 10) + 1;
+                            dealerTotal += rand;
+                            $('.dealer').append(`, ` + rand);
+                    }
                 }
- 
-                if (total > 21 || dealerTotal == 21 || (total < 21 && dealerTotal < 21 && dealerTotal > total) ) {
+    
+                if (total > 21 || (dealerTotal == 21 && total != 21) || ((total < 21) && (dealerTotal < 21) && (dealerTotal > total)) ) {
                     $('.hit').remove();
                     $('.stay').remove();
-                text = `<button class="continue"><p>Continue</p></button><div class="textbox" data-id="11">
-                <a class="text" data-id="11"><p class="textboxp">Damn. You lost $${blackjack.bet}! Stress +10. Try harder.</p></a> 
-                </div>`;
-                characterData.money -= parseInt(blackjack.bet);
-                blackjack.bet = 0.0;
-                blackjack.dealerCards = [];
-                blackjack.yourCards = [];
-                characterData.stress += 10;
-                $main.append(text);
+                    text = `<button class="continue"><p>Continue</p></button><div class="textbox" data-id="11">
+                    <a class="text" data-id="11"><p class="textboxp">Damn. You lost $${blackjack.bet}! Stress +10. Try harder.</p></a> 
+                    </div>`;
+                    characterData.money -= parseInt(blackjack.bet);
+                    blackjack.bet = 0.0;
+                    blackjack.dealerCards = [];
+                    blackjack.yourCards = [];
+                    characterData.stress += 10;
+                    $main.append(text);
 
-            } else if (total > dealerTotal && total != 21) {
-                $('.hit').remove();
-                $('.stay').remove();
-                text = `<button class="continue"><p>Continue</p></button><div class="textbox" data-id="11">
-                <a class="text" data-id="11"><p class="textboxp">You won $${blackjack.bet}!! </p></a> 
-                </div>`;
-                characterData.money += parseInt(blackjack.bet);
-                blackjack.bet = 0.0;
-                blackjack.dealerCards = [];
-                blackjack.yourCards = [];
-                $main.append(text);
-                
-            } else if (total == dealerTotal) {
-                $('.hit').remove();
-                $('.stay').remove();
-                text = `<button class="continue"><p>Continue</p></button><div class="textbox" data-id="11">
-                <a class="text" data-id="11"><p class="textboxp">Tie! You didn't win or lose anything... Stress +5.</p></a> 
-                </div>`;
-                blackjack.bet = 0.0;
-                blackjack.dealerCards = [];
-                blackjack.yourCards = [];
-                characterData.stress += 5;
-                $main.append(text);
+                } else if (total > dealerTotal && total != 21) {
+                    $('.hit').remove();
+                    $('.stay').remove();
+                    text = `<button class="continue"><p>Continue</p></button><div class="textbox" data-id="11">
+                    <a class="text" data-id="11"><p class="textboxp">You won $${blackjack.bet}!! </p></a> 
+                    </div>`;
+                    characterData.money += parseInt(blackjack.bet);
+                    blackjack.bet = 0.0;
+                    blackjack.dealerCards = [];
+                    blackjack.yourCards = [];
+                    $main.append(text);
+                    
+                } else if (total == dealerTotal) {
+                    $('.hit').remove();
+                    $('.stay').remove();
+                    text = `<button class="continue"><p>Continue</p></button><div class="textbox" data-id="11">
+                    <a class="text" data-id="11"><p class="textboxp">Tie! You didn't win or lose anything... Stress +5.</p></a> 
+                    </div>`;
+                    blackjack.bet = 0.0;
+                    blackjack.dealerCards = [];
+                    blackjack.yourCards = [];
+                    characterData.stress += 5;
+                    $main.append(text);
 
-                
-            } else if (dealerTotal > total) {
-                $('.hit').remove();
-                $('.stay').remove();
-                text = `<button class="continue"><p>Continue</p></button><div class="textbox" data-id="11">
-                <a class="text" data-id="11"><p class="textboxp">The dealer busted! You won $${blackjack.bet}!</p></a> 
-                </div>`;
-                characterData.money += parseInt(blackjack.bet)
-                blackjack.bet = 0.0;
-                blackjack.dealerCards = [];
-                blackjack.yourCards = [];
-                $main.append(text);
-            }
+                    
+                } else if (dealerTotal > total) {
+                    $('.hit').remove();
+                    $('.stay').remove();
+                    text = `<button class="continue"><p>Continue</p></button><div class="textbox" data-id="11">
+                    <a class="text" data-id="11"><p class="textboxp">The dealer busted! You won $${blackjack.bet}!</p></a> 
+                    </div>`;
+                    characterData.money += parseInt(blackjack.bet)
+                    blackjack.bet = 0.0;
+                    blackjack.dealerCards = [];
+                    blackjack.yourCards = [];
+                    $main.append(text);
+                }
 
 
         });
