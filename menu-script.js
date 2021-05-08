@@ -369,14 +369,18 @@ const renderStatsSidebar = function(character) {
 
 
             $('.dealer').append(blackjack.dealerCards[1]);
-            
-                if (dealerTotal < 16) {
-                while (dealerTotal < 16) {
-                        const rand = Math.floor(Math.random() * 10) + 1;
-                            dealerTotal += rand;
-                            $('.dealer').append(`, ` + rand);
+            if (dealerTotal < 16) {
+
+                for (var i = 0; i < 5; i++) {
+                    const rand = Math.floor(Math.random() * 10) + 1;
+                    dealerTotal += rand;
+                    $('.dealer').append(`, ` + rand);
+                    if (dealerTotal >= 16) {
+                        i = 6;
                     }
                 }
+            }
+                            
     
                 if (total > 21 || (dealerTotal == 21 && total != 21) || ((total < 21) && (dealerTotal < 21) && (dealerTotal > total)) ) {
                     $('.hit').remove();
