@@ -1,3 +1,4 @@
+import axios from "axios";
 import { blackjack } from "./blackjack.js";
 import {characterData} from "./character.js";
 import {scenes} from "./scenes.js"
@@ -48,6 +49,11 @@ const renderStatsSidebar = function(character) {
     };
 
     const renderQuizArea = function(quiz) {
+        if (characterData.stress >= 50) {
+            $('.main').append(`<div><h2>Are you too stressed to do this? Let me help you out-- TRUE.</h2></div>
+            <button class="continue"><p>Continue</p></button>`);
+            return;
+        }
 
         let text = `
         <div class="quizBox">
@@ -142,37 +148,49 @@ const renderStatsSidebar = function(character) {
     } 
 
     const renderBlackjack = function() {
+        if (characterData.stress >= 50) {
+            $('.main').append(`<div><h2>You thought because you were gambling, you could do this while stressed? No, sis, you cannot.
+            Pass GO, but do NOT collect $200.</h2></div><button class="continue"><p>Continue</p></button>`);
+            return;
+        }
         let text = `
         <div>
         <form>
-         <label><h2>Amount to bet:</h2></label>
+         <label><h2>Set bet:</h2></label>
          <input class="bet" value="10.0">
-         <button class="saveBet"><p>Bet</p></button>
+         <button class="saveBet"><p>Bet</p></button><button class="blackjack"><p>Blackjack</p></button>
         </form>
         </div>
         `;
+
         const $main = $('.main');
         $main.append(text);
 
-        const firstcard = Math.floor(Math.random() * 12) + 1;
-        const secondcard = Math.floor(Math.random() * 12) + 1;
+        const firstcard = Math.floor(Math.random() * 10) + 1;
+        const secondcard = Math.floor(Math.random() * 10) + 1;
         blackjack.yourCards.push(firstcard);
         blackjack.yourCards.push(secondcard);
-        const dealerF = Math.floor(Math.random() * 12) + 1;
-        const dealerS = Math.floor(Math.random() * 12) + 1;
+        const dealerF = Math.floor(Math.random() * 10) + 1;
+        const dealerS = Math.floor(Math.random() * 10) + 1;
         blackjack.dealerCards.push(dealerF);
         blackjack.dealerCards.push(dealerS);
+        blackjack.bet = $('.bet').val();
 
-        $('.saveBet').on("click", function() {
+        $('.saveBet').on("click", function(event) {
+            event.preventDefault();
+            blackjack.bet = $('.bet').val();
+            $main.append(`<p>Bet of ${blackjack.bet} set.</p>`)
+        })
+
+        $('.blackjack').on("click", function() {
             $main.empty();
-            const bet = $('.bet').val();
-            blackjack.bet = bet;
             text = `
             <h2 class="your-cards">Your cards: <br>${firstcard}, ${secondcard}</h2>>
             <br><br>
             <h2 class="dealer">Dealer: ${dealerF}, #</h2>
             <br>
             <button class="hit"><p class="hit">Hit</p></button><button class="stay"><p class="stay">Stay</p></button>
+            <h2>The 2nd card of the dealer is hidden and will only show after your turn.<br>Remember, dealer stands at 16.</h2>
             `
             $main.append(text);
 
@@ -242,6 +260,13 @@ const renderStatsSidebar = function(character) {
             } 
 
         } else if (type == "workout") {
+            const quotes = await axios({
+                method: 'get',
+                url: 'https://type.fit/api/quotes'
+            }).then(function() {
+                return quotes.data;
+            });
+            // Write code to generate a random quote & message text here
 
         } else if (type == "money") {
             renderBlackjack();
@@ -273,22 +298,15 @@ const renderStatsSidebar = function(character) {
 
             if (total == 21) {
                 // Resetting the blackjack game
-                const text = `<div class="textbox" data-id="11">
-                <a class="text" data-id="11"><p class="textboxp">Nice! You won ${blackjack.bet}!</p></a> 
+                const text = `<button class="continue"><p>Continue</p></button><div class="textbox" data-id="11">
+                <a class="text" data-id="11"><p class="textboxp">Nice! You won $${blackjack.bet}!</p></a> 
                 </div>`;
-                characterData.money += blackjack.bet;
-                blackjack.bet = 0;
+                $('.hit').remove();
+                $('.stay').remove();
+                characterData.money += parseInt(blackjack.bet);
+                blackjack.bet = 0.0;
                 blackjack.dealerCards = [];
                 blackjack.yourCards = [];
-
-                // Put a win message underneath.
-                const $side = $('.side');
-                $side.empty();
-                var bar =  renderStatsSidebar(characterData);
-                $side.append(bar); 
-                const main = renderMainArea();
-                $main.append(main);
-                
                 $main.append(text);
                 
             } 
@@ -297,20 +315,16 @@ const renderStatsSidebar = function(character) {
             total += rand;
             $('.your-cards').append(`, ` + rand);
             if (total > 21) {
-                const text = `<div class="textbox" data-id="11">
-                <a class="text" data-id="11"><p class="textboxp">Damn. You lost ${blackjack.bet}!</p></a> 
+                const text = `<button class="continue"><p>Continue</p></button><div class="textbox" data-id="11">
+                <a class="text" data-id="11"><p class="textboxp">BUST! Damn. You lost $${blackjack.bet}! That stings. Stress +10.</p></a> 
                 </div>`;
-                characterData.money -= blackjack.bet;
-                blackjack.bet = 0;
+                $('.hit').remove();
+                $('.stay').remove();
+                characterData.money -= parseInt(blackjack.bet);
+                blackjack.bet = 0.0;
                 blackjack.dealerCards = [];
                 blackjack.yourCards = [];
-                const $side = $('.side');
-                $side.empty();
-                var bar =  renderStatsSidebar(characterData);
-                $side.append(bar); 
-                const main = renderMainArea();
-                $main.append(main);
-                
+                characterData.stress += 10;
                 $main.append(text);
             }
         });
@@ -322,80 +336,95 @@ const renderStatsSidebar = function(character) {
             });
             let dealerTotal = 0;
             blackjack.dealerCards.forEach(card => {
-                dealerTotal += card;
+                dealerTotal += parseInt(card);
             });
 
             if (total == 21) {
                 // Resetting the blackjack game
-                text = `<div class="textbox" data-id="11">
+                $('.hit').remove();
+                $('.stay').remove();
+                text = `<button class="continue"><p>Continue</p></button><div class="textbox" data-id="11">
                 <a class="text" data-id="11"><p class="textboxp">Nice! You won ${blackjack.bet}!</p></a> 
                 </div>`;
                 characterData.money += blackjack.bet;
                 blackjack.bet = 0;
                 blackjack.dealerCards = [];
                 blackjack.yourCards = [];
-
-                // Put a win message underneath.
-                $side.empty();
-                bar =  renderStatsSidebar(characterData);
-                $side.append(bar); 
-                $main.empty();
-                main = renderMainArea();
-                $main.append(main);
-                
                 $main.append(text);
                 
             }
             $('.dealer').append(blackjack.dealerCards[1]);
             
-            const loop = function() {
-                setTimeout(function() {
-                    const rand = Math.floor(Math.random() * 12) + 1;
-                    dealerTotal += rand;
-                    $('.dealer').append(rand);
-             })
-            }
-                while (dealerTotal < 16 || dealerTotal < total) {
-                        loop();
-                        dealerTotal = dealerTotal;
-                        
-            }
+
+               while (dealerTotal < 16) {
+                    const rand = Math.floor(Math.random() * 10) + 1;
+                        dealerTotal += parseInt(rand);
+                        $('.dealer').append(`, ` + rand);
+                }
  
-            if (total > 21 || dealerTotal == 21 || (total < 21 && dealerTotal < 21 && dealerTotal > total) ) {
-                text = `<div class="textbox" data-id="11">
-                <a class="text" data-id="11"><p class="textboxp">Damn. You lost ${blackjack.bet}!</p></a> 
+                if (total > 21 || dealerTotal == 21 || (total < 21 && dealerTotal < 21 && dealerTotal > total) ) {
+                    $('.hit').remove();
+                    $('.stay').remove();
+                text = `<button class="continue"><p>Continue</p></button><div class="textbox" data-id="11">
+                <a class="text" data-id="11"><p class="textboxp">Damn. You lost $${blackjack.bet}! Stress +10. Try harder.</p></a> 
                 </div>`;
-                characterData.money -= blackjack.bet;
-                blackjack.bet = 0;
+                characterData.money -= parseInt(blackjack.bet);
+                blackjack.bet = 0.0;
                 blackjack.dealerCards = [];
                 blackjack.yourCards = [];
-                $side.empty();
-                bar =  renderStatsSidebar(characterData);
-                $side.append(bar); 
-                $main.empty();
-                main = renderMainArea()
-                $main.append(main);
-                
+                characterData.stress += 10;
                 $main.append(text);
-            } else {
-                text = `<div class="textbox" data-id="11">
-                <a class="text" data-id="11"><p class="textboxp">You didn't win or lose anything.</p></a> 
+
+            } else if (total > dealerTotal && total != 21) {
+                $('.hit').remove();
+                $('.stay').remove();
+                text = `<button class="continue"><p>Continue</p></button><div class="textbox" data-id="11">
+                <a class="text" data-id="11"><p class="textboxp">You won $${blackjack.bet}!! </p></a> 
                 </div>`;
-                blackjack.bet = 0;
+                characterData.money += parseInt(blackjack.bet);
+                blackjack.bet = 0.0;
                 blackjack.dealerCards = [];
                 blackjack.yourCards = [];
-                $side.empty();
-                bar =  renderStatsSidebar(characterData);
-                $side.append(bar); 
-                $main.empty();
-                main = renderMainArea()
-                $main.append(main);
+                $main.append(text);
                 
+            } else if (total == dealerTotal) {
+                $('.hit').remove();
+                $('.stay').remove();
+                text = `<button class="continue"><p>Continue</p></button><div class="textbox" data-id="11">
+                <a class="text" data-id="11"><p class="textboxp">Tie! You didn't win or lose anything... Stress +5.</p></a> 
+                </div>`;
+                blackjack.bet = 0.0;
+                blackjack.dealerCards = [];
+                blackjack.yourCards = [];
+                characterData.stress += 5;
+                $main.append(text);
+
+                
+            } else if (dealerTotal > total) {
+                $('.hit').remove();
+                $('.stay').remove();
+                text = `<button class="continue"><p>Continue</p></button><div class="textbox" data-id="11">
+                <a class="text" data-id="11"><p class="textboxp">The dealer busted! You won $${blackjack.bet}!</p></a> 
+                </div>`;
+                characterData.money += parseInt(blackjack.bet)
+                blackjack.bet = 0.0;
+                blackjack.dealerCards = [];
+                blackjack.yourCards = [];
                 $main.append(text);
             }
 
 
         });
+
+        $main.on("click", ".continue", function() {
+            $side.empty();
+            bar =  renderStatsSidebar(characterData);
+            $side.append(bar); 
+            $main.empty();
+            main = renderMainArea()
+            $main.append(main);
+        });
+        
         
     
     

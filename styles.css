@@ -154,7 +154,7 @@ button {
     border-style: groove;
     border-color: black;
 }
-button:hover {
+.hit:hover, .stay:hover, .blackjack:hover, .continue:hover {
     background-color: black;
     color: white;
     border-color: white;
